@@ -1,15 +1,20 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import CartIcon from "../Cart/CartIcon";
 import classes from "./HeaderCartButton.module.css";
-import CartContext from "../../store/cart-context";
+import { cartActions } from "../../store/cart";
 
-const HeaderCartButton = (props) => {
+const HeaderCartButton = () => {
+  const dispatch = useDispatch();
   const [btnIsBumped, setBtnIsBumped] = useState(false);
-  const cartCtx = useContext(CartContext);
-  const { items } = cartCtx;
+  const items = useSelector((state) => state.cart.items);
   const numberOfItems = items.reduce((curNum, item) => {
     return curNum + item.amount;
   }, 0);
+
+  const showCartHandler = () => {
+    dispatch(cartActions.showCart());
+  };
 
   const btnClasses = `${classes.button} ${btnIsBumped ? classes.bump : ""}`;
 
@@ -27,7 +32,7 @@ const HeaderCartButton = (props) => {
   }, [items]);
 
   return (
-    <button className={btnClasses} onClick={props.onClick}>
+    <button className={btnClasses} onClick={showCartHandler}>
       <span className={classes.icon}>
         <CartIcon />
       </span>

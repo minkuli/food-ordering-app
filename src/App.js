@@ -1,29 +1,22 @@
-import { useState } from "react";
+import { Fragment } from "react";
+import { useSelector } from "react-redux";
+
 import Header from "./components/Layout/Header";
 import Meals from "./components/Meals/Meals";
 import Cart from "./components/Cart/Cart";
-import CartProvider from "./store/CartProvider";
 
 function App() {
-  const [cartIsShown, setCartIsShown] = useState(false);
-
-  const showCartHandler = () => {
-    setCartIsShown(true);
-  };
-
-  const hideCartHandler = () => {
-    setCartIsShown(false);
-  };
+  const isShown = useSelector((state) => state.cart.isShown);
 
   return (
-    <CartProvider>
-      {cartIsShown && <Cart onHideCart={hideCartHandler} />}
+    <Fragment>
+      {isShown && <Cart />}
 
-      <Header onShowCart={showCartHandler} />
+      <Header />
       <main>
         <Meals />
       </main>
-    </CartProvider>
+    </Fragment>
   );
 }
 

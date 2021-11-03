@@ -1,29 +1,29 @@
-import React, { useContext, useState } from "react";
-import CartContext from "../../store/cart-context";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Modal from "../UI/Modal";
 import CartItem from "./CartItem";
 import classes from "./Cart.module.css";
 import Checkout from "./Checkout";
+import { cartActions } from "../../store/cart";
 
-const Cart = (props) => {
-  const { onHideCart } = props;
-  const cartCtx = useContext(CartContext);
-  const totalAmount = `${cartCtx.totalAmount.toFixed(2)}`;
-  const hasItems = cartCtx.items.length > 0;
+const Cart = () => {
+  const dispatch = useDispatch();
+  const items = useSelector((state) => state.cart.items);
+  const totalAmount = `${useSelector((state) => state.cart.totalAmount).toFixed(
+    2
+  )}`;
+  const hasItems = items.length > 0;
   const [isCheckout, setIsCheckout] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [didSubmit, setDidSubmit] = useState(false);
 
-  const cartItemRemoveHandler = (id) => {
-    cartCtx.removeItem(id);
-  };
-
-  const cartItemAddHandler = (item) => {
-    cartCtx.addItem(item);
-  };
-
   const orderHandler = () => {
     setIsCheckout(true);
+  };
+
+  const hideCartHandler = () => {
+    dispatch(cartActions.hideCart());
+    if (didSubmit) dispatch(cartActions.clearCart());
   };
 
   const submitOrderHandler = async (userData) => {
@@ -34,7 +34,7 @@ const Cart = (props) => {
         method: "POST",
         body: JSON.stringify({
           user: userData,
-          orderedItems: cartCtx.items,
+          orderedItems: items,
         }),
       }
     );
@@ -43,19 +43,17 @@ const Cart = (props) => {
     }
     setIsSubmitting(false);
     setDidSubmit(true);
-    cartCtx.clearCart();
   };
 
   const cartItems = (
     <ul className={classes["cart-items"]}>
-      {cartCtx.items.map((item) => (
+      {items.map((item) => (
         <CartItem
           key={item.id}
+          id={item.id}
           name={item.name}
           amount={item.amount}
           price={item.price}
-          onRemove={cartItemRemoveHandler.bind(null, item.id)}
-          onAdd={cartItemAddHandler.bind(null, item)}
         />
       ))}
     </ul>
@@ -63,7 +61,7 @@ const Cart = (props) => {
 
   const modalActions = (
     <div className={classes.actions}>
-      <button className={classes["button--alt"]} onClick={onHideCart}>
+      <button className={classes["button--alt"]} onClick={hideCartHandler}>
         Close
       </button>
       {hasItems && (
@@ -82,7 +80,7 @@ const Cart = (props) => {
         <span>{totalAmount}</span>
       </div>
       {isCheckout && (
-        <Checkout onConfirm={submitOrderHandler} onCancel={onHideCart} />
+        <Checkout onConfirm={submitOrderHandler} onCancel={hideCartHandler} />
       )}
       {!isCheckout && modalActions}
     </React.Fragment>
@@ -93,7 +91,7 @@ const Cart = (props) => {
     <React.Fragment>
       <p>Successfully sent the order.</p>
       <div className={classes.actions}>
-        <button className={classes.button} onClick={onHideCart}>
+        <button className={classes.button} onClick={hideCartHandler}>
           Close
         </button>
       </div>
@@ -101,7 +99,7 @@ const Cart = (props) => {
   );
 
   return (
-    <Modal onClose={onHideCart}>
+    <Modal onClose={hideCartHandler}>
       {!isSubmitting && !didSubmit && cartModalContent}
       {isSubmitting && isSubmittingModalContent}
       {!isSubmitting && didSubmit && didSubmitModalContent}

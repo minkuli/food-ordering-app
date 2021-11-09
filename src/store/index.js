@@ -1,23 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import cartReducer from "./cart";
-
-// const initialMealsState = {}
-
-/* const mealsSlice = createSlice({
-    name: 'meals',
-    initialState: initialMealsState,
-    reducers: {
-
-    }
-}) */
+import uiReducer from "./ui";
 
 const store = configureStore({
   reducer: {
-    //meals: mealsSlice.reducer,
     cart: cartReducer,
+    ui: uiReducer,
   },
 });
-
-//export const mealsActions = mealsSlice.actions
 
 export default store;

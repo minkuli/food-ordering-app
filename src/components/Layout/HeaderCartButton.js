@@ -8,9 +8,7 @@ const HeaderCartButton = () => {
   const dispatch = useDispatch();
   const [btnIsBumped, setBtnIsBumped] = useState(false);
   const items = useSelector((state) => state.cart.items);
-  const numberOfItems = items.reduce((curNum, item) => {
-    return curNum + item.amount;
-  }, 0);
+  const numberOfItems = useSelector((state) => state.cart.totalQuantity);
 
   const showCartHandler = () => {
     dispatch(cartActions.showCart());

@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Modal from "../UI/Modal";
 import CartItem from "./CartItem";
 import classes from "./Cart.module.css";
 import Checkout from "./Checkout";
 import { cartActions } from "../../store/cart";
+import { uiActions } from "../../store/ui";
+import { sendOrder } from "../../store/cart-actions";
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -13,36 +15,26 @@ const Cart = () => {
     2
   )}`;
   const hasItems = items.length > 0;
-  const [isCheckout, setIsCheckout] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [didSubmit, setDidSubmit] = useState(false);
+  const isCheckout = useSelector((state) => state.ui.isCheckout);
+  const isSubmitting = useSelector((state) => state.ui.isSubmitting);
+  const didSubmit = useSelector((state) => state.ui.didSubmit);
 
   const orderHandler = () => {
-    setIsCheckout(true);
+    dispatch(uiActions.checkOut());
   };
 
   const hideCartHandler = () => {
     dispatch(cartActions.hideCart());
-    if (didSubmit) dispatch(cartActions.clearCart());
   };
 
-  const submitOrderHandler = async (userData) => {
-    setIsSubmitting(true);
-    const response = await fetch(
-      "https://react-http-33fc9-default-rtdb.europe-west1.firebasedatabase.app/orders.json",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          user: userData,
-          orderedItems: items,
-        }),
-      }
-    );
-    if (!response) {
-      throw new Error("Something went wrong!");
-    }
-    setIsSubmitting(false);
-    setDidSubmit(true);
+  const submitOrderHandler = (userData) => {
+    dispatch(sendOrder(userData, items, didSubmit));
+  };
+
+  const closeOrderHandler = () => {
+    hideCartHandler();
+    dispatch(cartActions.clearCart());
+    dispatch(uiActions.orderSubmitted());
   };
 
   const cartItems = (
@@ -91,7 +83,7 @@ const Cart = () => {
     <React.Fragment>
       <p>Successfully sent the order.</p>
       <div className={classes.actions}>
-        <button className={classes.button} onClick={hideCartHandler}>
+        <button className={classes.button} onClick={closeOrderHandler}>
           Close
         </button>
       </div>
